@@ -1,3 +1,224 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─────────────────────────────────────────────
+   BASE RESETS & TYPOGRAPHY
+───────────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-white text-gray-900 font-sans;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-rose-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-rose-500;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   KEYFRAME ANIMATIONS
+───────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; transform: translateY(-8px); }
+  to   { opacity: 1; max-height: 600px; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─────────────────────────────────────────────
+   ANIMATION UTILITY CLASSES
+───────────────────────────────────────────── */
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.4s ease-in-out forwards;
+  }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+
+  .animate-fadeInDown {
+    animation: fadeInDown 0.4s ease-out forwards;
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.35s ease-out forwards;
+  }
+
+  .animate-slideInLeft {
+    animation: slideInLeft 0.4s ease-out forwards;
+  }
+
+  .animate-scaleIn {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spinSlow 3s linear infinite;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientShift 4s ease infinite;
+  }
+
+  /* Staggered delays */
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+
+  /* ─── GLASSMORPHISM ─── */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/30;
+  }
+
+  .glass-dark {
+    @apply bg-gray-900/80 backdrop-blur-md border border-gray-700/30;
+  }
+
+  .glass-rose {
+    @apply bg-rose-600/90 backdrop-blur-md border border-rose-400/30;
+  }
+
+  /* ─── SKELETON SHIMMER ─── */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* ─── GRADIENT TEXT ─── */
+  .gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-rose-800;
+  }
+
+  .gradient-text-hero {
+    @apply text-transparent bg-clip-text;
+    background-image: linear-gradient(135deg, #e11d48 0%, #be123c 50%, #9f1239 100%);
+  }
+
+  /* ─── PAGE TRANSITION WRAPPER ─── */
+  .page-enter {
+    animation: fadeInUp 0.45s ease-out forwards;
+  }
+
+  /* ─── CARD HOVER LIFT ─── */
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-xl;
+  }
+
+  /* ─── SECTION PADDING ─── */
+  .section-pad {
+    @apply py-20 sm:py-28;
+  }
+
+  /* ─── FOCUS RING ─── */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   COMPONENT LAYER UTILITIES
+───────────────────────────────────────────── */
+@layer components {
+  /* Pill badge */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider;
+  }
+
+  /* Standard input style */
+  .input-base {
+    @apply w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-semibold
+           focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all;
+  }
+
+  /* Primary CTA button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3
+           bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl
+           shadow-md shadow-rose-600/20 hover:shadow-lg hover:-translate-y-0.5
+           transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Secondary outline button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3
+           border border-gray-200 hover:border-rose-400 hover:bg-rose-50
+           text-gray-700 hover:text-rose-600 font-bold rounded-xl
+           transition-all duration-200;
+  }
+
+  /* Section heading label */
+  .section-label {
+    @apply inline-flex items-center gap-2 px-3.5 py-1.5
+           bg-rose-50 border border-rose-100/60 rounded-full
+           text-rose-600 text-xs sm:text-sm font-bold uppercase tracking-widest;
+  }
+}
