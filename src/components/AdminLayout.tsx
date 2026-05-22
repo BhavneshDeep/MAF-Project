@@ -4,7 +4,7 @@ import { supabase } from '../services/supabase';
 import {
   LayoutDashboard, Users, Calendar, Briefcase,
   FileText, Heart, LogOut, Loader2, Handshake,
-  Menu, X, ChevronRight
+  Menu, X, ChevronRight, Building2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -16,6 +16,7 @@ const navItems = [
   { name: 'Appointments',  path: '/admin/appointments',    icon: FileText },
   { name: 'Donations',     path: '/admin/donations',       icon: Heart },
   { name: 'Proposals',     path: '/admin/collaborations',  icon: Handshake },
+  { name: 'Partners',      path: '/admin/collaborators',   icon: Building2 },
 ];
 
 export default function AdminLayout() {

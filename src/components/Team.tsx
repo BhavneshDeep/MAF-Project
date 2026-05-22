@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TeamMember } from '../types';
 import { Mail, Phone, Linkedin, Loader2, Award } from 'lucide-react';
 import { api } from '../services/api';
@@ -11,58 +11,239 @@ const localFallbackTeam: TeamMember[] = [
     name: 'Bhawesh Karmani',
     role: 'Founder & President',
     image_url: '/Assets/asset_team/Bhawesh Karmani.jpg',
-    bio: 'Dedicated leader guiding MAF with a vision of comprehensive community uplift and education reforms across Pakistan.'
+    bio: 'Dedicated leader guiding MAF with a vision of comprehensive community uplift and education reforms across Pakistan.',
+    email: 'teammaheshwaripak@gmail.com',
+    phone: '+923330000000',
+    linkedin: 'https://linkedin.com'
   },
   {
     id: 'fallback-2',
     name: 'Bhevish Kumar',
     role: 'General Secretary',
     image_url: '/Assets/asset_team/Bhevish Kumar.jpg',
-    bio: 'Organizes operational frameworks, handles community outreach programs, and ensures swift administrative execution.'
+    bio: 'Organizes operational frameworks, handles community outreach programs, and ensures swift administrative execution.',
+    email: 'bhevish.kumar@example.com',
+    phone: '+923331111111',
+    linkedin: 'https://linkedin.com'
   },
   {
     id: 'fallback-3',
     name: 'Bhunesh Kumar',
     role: 'Vice President',
     image_url: '/Assets/asset_team/Bhunesh Kumar.jpg',
-    bio: 'Oversees dynamic relief drives and health awareness campaigns with a relentless commitment to societal welfare.'
+    bio: 'Oversees dynamic relief drives and health awareness campaigns with a relentless commitment to societal welfare.',
+    email: 'bhunesh.kumar@example.com',
+    phone: '+923332222222',
+    linkedin: 'https://linkedin.com'
   },
   {
     id: 'fallback-4',
     name: 'Jaint Karmani',
     role: 'Joint Secretary',
     image_url: '/Assets/asset_team/Jaint Karmani.jpg',
-    bio: 'Fosters educational initiatives, manages collaborative partnerships, and coordinates teacher-training programs.'
+    bio: 'Fosters educational initiatives, manages collaborative partnerships, and coordinates teacher-training programs.',
+    email: 'jaint.karmani@example.com',
+    phone: '+923333333333',
+    linkedin: 'https://linkedin.com'
   },
   {
     id: 'fallback-5',
     name: 'Mahaveer Langhani',
     role: 'Finance Secretary',
     image_url: '/Assets/asset_team/Mahaveer Langhani.jpg',
-    bio: 'Ensures extreme fiscal precision, financial transparency, audit readiness, and optimal budget allocation for NGO projects.'
+    bio: 'Ensures extreme fiscal precision, financial transparency, audit readiness, and optimal budget allocation for NGO projects.',
+    email: 'mahaveer.langhani@example.com',
+    phone: '+923334444444',
+    linkedin: 'https://linkedin.com'
   },
   {
     id: 'fallback-6',
     name: 'Neeraj Kumar',
     role: 'Information Secretary',
     image_url: '/Assets/asset_team/Neeraj Kumar.jpg',
-    bio: 'Spearheads corporate branding, media relations, dynamic digital presence, and impact reporting pipelines.'
+    bio: 'Spearheads corporate branding, media relations, dynamic digital presence, and impact reporting pipelines.',
+    email: 'neeraj.kumar@example.com',
+    phone: '+923335555555',
+    linkedin: 'https://linkedin.com'
   },
   {
     id: 'fallback-7',
     name: 'Sagar Langhani',
     role: 'Executive Member',
     image_url: '/Assets/asset_team/Sagar Langhani.jpg',
-    bio: 'Drives on-ground volunteer coordination during disaster management, food drives, and remote healthcare operations.'
+    bio: 'Drives on-ground volunteer coordination during disaster management, food drives, and remote healthcare operations.',
+    email: 'sagar.langhani@example.com',
+    phone: '+923336666666',
+    linkedin: 'https://linkedin.com'
   },
   {
     id: 'fallback-8',
     name: 'Gavish Karmani',
     role: 'Executive Member',
     image_url: '/Assets/asset_team/Gavish Karmani.jpg',
-    bio: 'Mobilizes youth networks and designs community-level awareness drives for sustainable infrastructure development.'
+    bio: 'Mobilizes youth networks and designs community-level awareness drives for sustainable infrastructure development.',
+    email: 'gavish.karmani@example.com',
+    phone: '+923337777777',
+    linkedin: 'https://linkedin.com'
   }
 ];
+
+interface TeamMemberCardProps {
+  member: TeamMember;
+}
+
+function TeamMemberCard({ member }: TeamMemberCardProps) {
+  const [activeIcon, setActiveIcon] = useState<'email' | 'phone' | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
+        setActiveIcon(null);
+      }
+    }
+
+    if (activeIcon) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeIcon]);
+
+  const handleIconClick = (type: 'email' | 'phone', e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveIcon((prev) => (prev === type ? null : type));
+  };
+
+  return (
+    <div 
+      ref={cardRef}
+      className="group bg-white rounded-2xl shadow-md hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full relative"
+    >
+      {/* Image Wrap with hover zoom */}
+      <div className="relative h-64 sm:h-72 overflow-hidden bg-gray-100">
+        <img
+          src={member.image_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800'}
+          alt={member.name}
+          className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => {
+            // Fallback if local profile image fails to load or path is wrong
+            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=800';
+          }}
+        />
+        {/* Rose Colored overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 transition-opacity duration-300" />
+        
+        {/* Position text absolute over image at the bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
+          <h3 className="text-xl font-bold text-white tracking-wide group-hover:text-rose-300 transition-colors">
+            {member.name}
+          </h3>
+          <p className="text-rose-400 text-sm font-semibold tracking-wider uppercase mt-1">
+            {member.role}
+          </p>
+        </div>
+      </div>
+      
+      {/* Bio Details */}
+      <div className="p-6 flex-1 flex flex-col justify-between bg-white">
+        <p className="text-gray-600 text-sm leading-relaxed text-justify mb-6 line-clamp-4 group-hover:line-clamp-none transition-all duration-300">
+          {member.bio}
+        </p>
+        
+        {/* Contact Social Icons with Click-to-Toggle Premium Popups */}
+        <div className="flex items-center justify-center gap-4 pt-4 border-t border-gray-100 mt-auto min-h-[3rem] relative">
+          {member.email && (
+            <div className="relative">
+              <button 
+                onClick={(e) => handleIconClick('email', e)}
+                className={`p-2 rounded-full transition-all duration-300 flex items-center justify-center ${
+                  activeIcon === 'email' 
+                    ? 'bg-rose-600 text-white shadow-md scale-110' 
+                    : 'bg-gray-50 text-gray-500 hover:bg-rose-50 hover:text-rose-600'
+                }`}
+                type="button"
+                aria-label="Toggle Email Details"
+              >
+                <Mail className="w-4 h-4" />
+              </button>
+              
+              {/* Premium Glassmorphic Tooltip */}
+              <div 
+                className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-gray-950/95 backdrop-blur-md border border-gray-800 text-white text-xs rounded-xl shadow-xl transition-all duration-300 z-30 flex items-center gap-2 whitespace-nowrap ${
+                  activeIcon === 'email' 
+                    ? 'opacity-100 scale-100 translate-y-0 visible' 
+                    : 'opacity-0 scale-95 translate-y-1 invisible pointer-events-none'
+                }`}
+              >
+                <a 
+                  href={`mailto:${member.email}?subject=Contact%20${encodeURIComponent(member.name)}`}
+                  className="hover:text-rose-400 font-semibold transition-colors flex items-center gap-1.5 py-0.5 px-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Mail className="w-3.5 h-3.5 text-rose-400" />
+                  <span>{member.email}</span>
+                </a>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-950" />
+              </div>
+            </div>
+          )}
+
+          {member.phone && (
+            <div className="relative">
+              <button 
+                onClick={(e) => handleIconClick('phone', e)}
+                className={`p-2 rounded-full transition-all duration-300 flex items-center justify-center ${
+                  activeIcon === 'phone' 
+                    ? 'bg-rose-600 text-white shadow-md scale-110' 
+                    : 'bg-gray-50 text-gray-500 hover:bg-rose-50 hover:text-rose-600'
+                }`}
+                type="button"
+                aria-label="Toggle Phone Details"
+              >
+                <Phone className="w-4 h-4" />
+              </button>
+              
+              {/* Premium Glassmorphic Tooltip */}
+              <div 
+                className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-3 py-2 bg-gray-950/95 backdrop-blur-md border border-gray-800 text-white text-xs rounded-xl shadow-xl transition-all duration-300 z-30 flex items-center gap-2 whitespace-nowrap ${
+                  activeIcon === 'phone' 
+                    ? 'opacity-100 scale-100 translate-y-0 visible' 
+                    : 'opacity-0 scale-95 translate-y-1 invisible pointer-events-none'
+                }`}
+              >
+                <a 
+                  href={`tel:${member.phone}`}
+                  className="hover:text-rose-400 font-semibold transition-colors flex items-center gap-1.5 py-0.5 px-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Phone className="w-3.5 h-3.5 text-rose-400" />
+                  <span>{member.phone}</span>
+                </a>
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-950" />
+              </div>
+            </div>
+          )}
+
+          {member.linkedin && (
+            <div className="relative">
+              <button 
+                onClick={() => window.open(member.linkedin, "_blank")}
+                className="p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-all flex items-center justify-center animate-none"
+                type="button"
+                aria-label="Open LinkedIn Profile"
+              >
+                <Linkedin className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Team() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -121,69 +302,7 @@ export default function Team() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {teamMembers.map((member) => (
-              <div 
-                key={member.id} 
-                className="group bg-white rounded-2xl shadow-md hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full"
-              >
-                {/* Image Wrap with hover zoom */}
-                <div className="relative h-64 sm:h-72 overflow-hidden bg-gray-100">
-                  <img
-                    src={member.image_url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800'}
-                    alt={member.name}
-                    className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
-                    onError={(e) => {
-                      // Fallback if local profile image fails to load or path is wrong
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=800';
-                    }}
-                  />
-                  {/* Rose Colored overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 transition-opacity duration-300" />
-                  
-                  {/* Position text absolute over image at the bottom */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
-                    <h3 className="text-xl font-bold text-white tracking-wide group-hover:text-rose-300 transition-colors">
-                      {member.name}
-                    </h3>
-                    <p className="text-rose-400 text-sm font-semibold tracking-wider uppercase mt-1">
-                      {member.role}
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Bio Details */}
-                <div className="p-6 flex-1 flex flex-col justify-between bg-white">
-                  <p className="text-gray-600 text-sm leading-relaxed text-justify mb-6 line-clamp-4 group-hover:line-clamp-none transition-all duration-300">
-                    {member.bio}
-                  </p>
-                  
-                  {/* Reusable Contact Social Icons */}
-                  <div className="flex items-center justify-center gap-4 pt-4 border-t border-gray-100 mt-auto">
-                    <a 
-                      href={`mailto:teammaheshwaripak@gmail.com?subject=Contact%20${encodeURIComponent(member.name)}`}
-                      className="p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors"
-                      title="Send Email"
-                    >
-                      <Mail className="w-4 h-4" />
-                    </a>
-                    <a 
-                      href="tel:+923330000000"
-                      className="p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors"
-                      title="Call Phone"
-                    >
-                      <Phone className="w-4 h-4" />
-                    </a>
-                    <a 
-                      href="https://linkedin.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-rose-50 hover:text-rose-600 transition-colors"
-                      title="Connect on LinkedIn"
-                    >
-                      <Linkedin className="w-4 h-4" />
-                    </a>
-                  </div>
-                </div>
-              </div>
+              <TeamMemberCard key={member.id} member={member} />
             ))}
           </div>
         )}

@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { supabase } from '../../services/supabase';
 import { Project } from '../../types';
 import toast from 'react-hot-toast';
-import { Loader2, Plus, Trash2, Edit3, Briefcase, Sparkles, X, Heart } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit3, Briefcase, Sparkles, X, Heart, ArrowUp, ArrowDown } from 'lucide-react';
+import ImageUpload from '../../components/ImageUpload';
 
 export default function ManageProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,6 +96,87 @@ export default function ManageProjects() {
     }
   };
 
+  const syncOrdering = async (updatedProjects: Project[]) => {
+    try {
+      console.log('Initiating bulk projects ordering sync. Length:', updatedProjects.length);
+      const updates = updatedProjects.map((item, index) => {
+        console.log(`Update sync details - Table: projects, ID: ${item.id}, Index: ${index}`);
+        return supabase
+          .from('projects')
+          .update({ position: index })
+          .eq('id', item.id)
+          .select();
+      });
+
+      const results = await Promise.all(updates);
+      
+      const failed = results.find(res => res.error);
+      if (failed) {
+        console.error('Failed to sync a row in projects table:', failed.error);
+        throw failed.error;
+      }
+      
+      toast.success('Ordering updated successfully!');
+    } catch (err: any) {
+      console.error('Supabase update failed for projects ordering:', err);
+      const errMsg = err?.message || err?.details || JSON.stringify(err);
+      toast.error(`Failed to save ordering in database: ${errMsg}`);
+      loadProjects();
+    }
+  };
+
+  const handleMove = async (id: string, direction: 'up' | 'down') => {
+    const index = projects.findIndex(p => p.id === id);
+    if (index === -1) return;
+
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= projects.length) return;
+
+    const newProjects = [...projects];
+    const temp = newProjects[index];
+    newProjects[index] = newProjects[newIndex];
+    newProjects[newIndex] = temp;
+
+    const updatedProjects = newProjects.map((p, idx) => ({
+      ...p,
+      position: idx
+    }));
+
+    setProjects(updatedProjects);
+    await syncOrdering(updatedProjects);
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const reorderedProjects = [...projects];
+    const [draggedItem] = reorderedProjects.splice(draggedIndex, 1);
+    reorderedProjects.splice(targetIndex, 0, draggedItem);
+
+    const updatedProjects = reorderedProjects.map((p, idx) => ({
+      ...p,
+      position: idx
+    }));
+
+    setProjects(updatedProjects);
+    setDraggedIndex(null);
+    await syncOrdering(updatedProjects);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
   // Filter projects based on search query
   const filteredProjects = projects.filter(
     p =>
@@ -161,10 +245,15 @@ export default function ManageProjects() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6">
-              {filteredProjects.map(project => (
+              {filteredProjects.map((project, index) => (
                 <div
                   key={project.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row group hover:border-rose-200 hover:shadow-md transition-all duration-300"
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col md:flex-row group hover:border-rose-200 hover:shadow-md transition-all duration-300 cursor-grab active:cursor-grabbing ${draggedIndex === index ? 'opacity-40 border-rose-455 border-dashed' : 'border-gray-100'}`}
                 >
                   {/* Optional Image Panel */}
                   <div className="md:w-1/3 h-48 md:h-auto bg-gray-100 shrink-0 relative overflow-hidden">
@@ -210,15 +299,33 @@ export default function ManageProjects() {
 
                       <div className="flex items-center gap-2">
                         <button
+                          type="button"
+                          onClick={() => handleMove(project.id, 'up')}
+                          disabled={projects.findIndex(p => p.id === project.id) === 0}
+                          className="p-1.5 bg-white text-gray-500 hover:text-rose-600 disabled:opacity-35 disabled:pointer-events-none rounded-lg border border-gray-200 hover:border-rose-200 transition shadow-sm"
+                          title="Move Up"
+                        >
+                          <ArrowUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMove(project.id, 'down')}
+                          disabled={projects.findIndex(p => p.id === project.id) === projects.length - 1}
+                          className="p-1.5 bg-white text-gray-500 hover:text-rose-600 disabled:opacity-35 disabled:pointer-events-none rounded-lg border border-gray-200 hover:border-rose-200 transition shadow-sm"
+                          title="Move Down"
+                        >
+                          <ArrowDown className="w-3.5 h-3.5" />
+                        </button>
+                        <button
                           onClick={() => handleEditClick(project)}
-                          className="px-3 py-1.5 bg-white text-gray-650 hover:text-rose-600 rounded-lg border border-gray-200 hover:border-rose-200 text-xs font-bold transition shadow-sm flex items-center gap-1"
+                          className="px-3 py-1.5 bg-white text-gray-655 hover:text-rose-600 rounded-lg border border-gray-200 hover:border-rose-200 text-xs font-bold transition shadow-sm flex items-center gap-1"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                           <span>Edit</span>
                         </button>
                         <button
                           onClick={() => handleDelete(project.id)}
-                          className="px-3 py-1.5 bg-white text-gray-650 hover:text-red-650 rounded-lg border border-gray-200 hover:border-red-200 text-xs font-bold transition shadow-sm flex items-center gap-1"
+                          className="px-3 py-1.5 bg-white text-gray-655 hover:text-red-650 rounded-lg border border-gray-200 hover:border-red-200 text-xs font-bold transition shadow-sm flex items-center gap-1"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Delete</span>
@@ -291,13 +398,11 @@ export default function ManageProjects() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-555 uppercase tracking-wider">Cover Image URL</label>
-              <input
-                type="url"
-                placeholder="e.g. https://images.unsplash.com/..."
+              <ImageUpload
+                folder="projects"
                 value={formData.image_url}
-                onChange={e => setFormData({ ...formData, image_url: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition"
+                onChange={url => setFormData({ ...formData, image_url: url })}
+                label="Cover Image"
               />
             </div>
 

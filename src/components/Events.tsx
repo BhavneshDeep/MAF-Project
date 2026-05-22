@@ -52,6 +52,56 @@ const localFallbackEvents: Event[] = [
   }
 ];
 
+function AutoImageSlider({ images, title }: { images: string[]; title: string }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [images]);
+
+  if (!images || images.length === 0) return null;
+
+  return (
+    <div className="relative w-full h-full overflow-hidden">
+      {images.map((img, idx) => (
+        <img
+          key={img + idx}
+          src={img}
+          alt={`${title} - slide ${idx + 1}`}
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out transform
+            ${idx === currentIndex ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 z-0'}`}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800';
+          }}
+        />
+      ))}
+      
+      {/* Indicator dots */}
+      <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 z-20 flex gap-1.5 bg-black/40 backdrop-blur-xs px-2.5 py-1 rounded-full">
+        {images.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setCurrentIndex(idx);
+            }}
+            className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+              idx === currentIndex ? 'bg-rose-500 scale-125' : 'bg-white/60 hover:bg-white/80'
+            }`}
+            title={`Go to slide ${idx + 1}`}
+            type="button"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -161,15 +211,19 @@ export default function Events() {
                 className="group bg-white rounded-2xl shadow-md hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full"
               >
                 <div className="relative h-56 bg-gray-200 overflow-hidden shrink-0">
-                  <img
-                    src={event.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800'}
-                    alt={event.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800';
-                    }}
-                  />
-                  <div className="absolute top-4 right-4">
+                  {event.images && event.images.length > 1 ? (
+                    <AutoImageSlider images={event.images} title={event.title} />
+                  ) : (
+                    <img
+                      src={event.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800'}
+                      alt={event.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800';
+                      }}
+                    />
+                  )}
+                  <div className="absolute top-4 right-4 z-20">
                     <span className="bg-rose-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm border border-rose-500">
                       {event.category}
                     </span>

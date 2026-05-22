@@ -25,6 +25,7 @@ const ManageTeam           = lazy(() => import('./pages/admin/ManageTeam'));
 const ManageAppointments   = lazy(() => import('./pages/admin/ManageAppointments'));
 const ManageDonations      = lazy(() => import('./pages/admin/ManageDonations'));
 const ManageCollaborations = lazy(() => import('./pages/admin/ManageCollaborations'));
+const ManageCollaborators  = lazy(() => import('./pages/admin/ManageCollaborators'));
 
 /* ─── Shared Suspense Fallback ─── */
 function PageLoader() {
@@ -163,6 +164,14 @@ function App() {
               element={
                 <Suspense fallback={<PageLoader />}>
                   <ManageCollaborations />
+                </Suspense>
+              }
+            />
+            <Route
+              path="collaborators"
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <ManageCollaborators />
                 </Suspense>
               }
             />
